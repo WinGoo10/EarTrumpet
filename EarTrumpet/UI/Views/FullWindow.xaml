@@ -32,6 +32,19 @@
     </Window.Resources>
     <Grid>
         <Border Name="AcrylicBackgroundActive" Theme:Brush.Background="AcrylicBackground" />
+        <Border Name="AcrylicBackgroundWhileDragging">
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="Theme:Brush.Background" Value="AcrylicBackgroundFallback" />
+                    <Setter Property="Opacity" Value="0" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding ElementName=WindowRoot, Path=(Theme:AcrylicBrush.IsSuppressed)}" Value="True">
+                            <Setter Property="Opacity" Value="1" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+        </Border>
         <Border Name="AcrylicBackgroundInactive">
             <Border.Style>
                 <Style TargetType="{x:Type Border}">
