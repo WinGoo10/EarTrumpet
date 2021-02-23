@@ -37,7 +37,12 @@ namespace EarTrumpet.UI.Themes
                         // This works to prevent flicker:
                         window.InvalidateVisual();
                         window.UpdateLayout();
-                        Dispatcher.CurrentDispatcher.InvokeAsync(() => UpdateWindowAcrylic(window), DispatcherPriority.Render);
+                        Dispatcher.CurrentDispatcher.InvokeAsync(() => {
+                            if (window != null)
+                            {
+                                UpdateWindowAcrylic(window);
+                            } 
+                        }, DispatcherPriority.Render);
                     }
                     locationChangedTimer.Stop();
                     locationChangedTimer.Start();
@@ -48,8 +53,11 @@ namespace EarTrumpet.UI.Themes
             locationChangedTimer.Tick += (_, __) =>
             {
                 locationChangedTimer.Stop();
-                SetIsSuppressed(window, false);
-                UpdateWindowAcrylic(window);
+                if (window != null)
+                {
+                    SetIsSuppressed(window, false);
+                    UpdateWindowAcrylic(window);
+                }
             };
 
             Manager.Current.ThemeChanged += () =>
