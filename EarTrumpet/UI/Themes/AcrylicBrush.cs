@@ -22,37 +22,17 @@ namespace EarTrumpet.UI.Themes
         private static void BackgroundChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
             var window = (Window)dependencyObject;
-            var locationChangedTimer = new DispatcherTimer();
+            var suppressAryclicTimer = new DispatcherTimer();
 
             window.Closed += (_, __) => window = null;
             window.SourceInitialized += (_, __) => ApplyAcrylicToWindow(window, (string)e.NewValue);
-            window.LocationChanged += (_, __) =>
-            {
-                if ((HwndSource)PresentationSource.FromVisual(window) != null)
-                {
-                    if (!locationChangedTimer.IsEnabled)
-                    {
-                        SetIsSuppressed(window, true);
+            window.LocationChanged += (_, __) => SuppressAryclic(window, suppressAryclicTimer);
+            window.SizeChanged += (_, __) => SuppressAryclic(window, suppressAryclicTimer);
 
-                        // This works to prevent flicker:
-                        window.InvalidateVisual();
-                        window.UpdateLayout();
-                        Dispatcher.CurrentDispatcher.InvokeAsync(() => {
-                            if (window != null)
-                            {
-                                UpdateWindowAcrylic(window);
-                            } 
-                        }, DispatcherPriority.Render);
-                    }
-                    locationChangedTimer.Stop();
-                    locationChangedTimer.Start();
-                }
-            };
-
-            locationChangedTimer.Interval = TimeSpan.FromMilliseconds(200);
-            locationChangedTimer.Tick += (_, __) =>
+            suppressAryclicTimer.Interval = TimeSpan.FromMilliseconds(200);
+            suppressAryclicTimer.Tick += (_, __) =>
             {
-                locationChangedTimer.Stop();
+                suppressAryclicTimer.Stop();
                 if (window != null)
                 {
                     SetIsSuppressed(window, false);
@@ -67,6 +47,29 @@ namespace EarTrumpet.UI.Themes
                     ApplyAcrylicToWindow(window, (string)e.NewValue);
                 }
             };
+        }
+
+        private static void SuppressAryclic(Window window, DispatcherTimer timer)
+        {
+            if ((HwndSource)PresentationSource.FromVisual(window) != null)
+            {
+                if (!timer.IsEnabled)
+                {
+                    SetIsSuppressed(window, true);
+
+                    // This works to prevent flicker:
+                    window.InvalidateVisual();
+                    window.UpdateLayout();
+                    Dispatcher.CurrentDispatcher.InvokeAsync(() => {
+                        if (window != null)
+                        {
+                            UpdateWindowAcrylic(window);
+                        }
+                    }, DispatcherPriority.Render);
+                }
+                timer.Stop();
+                timer.Start();
+            }
         }
 
         private static void ApplyAcrylicToWindow(Window window, string refValue)
